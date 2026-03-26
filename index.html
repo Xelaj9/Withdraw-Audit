@@ -294,7 +294,7 @@ function applyThr(){
   S.slow=s;S.exc=new Set();S.sel=new Set(s.map(x=>x.id));
 }
 
-// ══════════ MINIMAL XLSX GENERATOR (embedded, no CDN) ══════════
+// ══════════ XLSX GENERATOR (formatted: col widths, bold headers, fill colors, borders) ══════════
 const XLSX_GEN=(function(){
   const crcT=(function(){const t=new Int32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c}return t})();
   function crc32(b){let c=-1;for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&0xFF]^(c>>>8);return(c^-1)>>>0}
@@ -312,6 +312,37 @@ const XLSX_GEN=(function(){
     let t=0;for(const p of P)t+=p.length;const r=new Uint8Array(t);let pos=0;for(const p of P){r.set(p,pos);pos+=p.length}return r}
   const X=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function colL(ci){let c='';if(ci<26)c=String.fromCharCode(65+ci);else c=String.fromCharCode(64+Math.floor(ci/26))+String.fromCharCode(65+ci%26);return c}
+
+  // Styles: 0=normal, 1=title(bold+14), 2=header(bold+fill+border), 3=data(border), 4=total(bold+border+fill), 5=number(border), 6=number-bold(border+bold)
+  const stylesXml='<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts>'+
+    '<fonts count="4">'+
+      '<font><sz val="11"/><name val="Calibri"/></font>'+
+      '<font><b/><sz val="14"/><name val="Calibri"/></font>'+
+      '<font><b/><sz val="11"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font>'+
+      '<font><b/><sz val="11"/><name val="Calibri"/></font>'+
+    '</fonts>'+
+    '<fills count="4">'+
+      '<fill><patternFill patternType="none"/></fill>'+
+      '<fill><patternFill patternType="gray125"/></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FF2F5496"/></patternFill></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFD9E2F3"/></patternFill></fill>'+
+    '</fills>'+
+    '<borders count="2">'+
+      '<border><left/><right/><top/><bottom/><diagonal/></border>'+
+      '<border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border>'+
+    '</borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="7">'+
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+      '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'+
+      '<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" wrapText="1"/></xf>'+
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>'+
+      '<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>'+
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+      '<xf numFmtId="164" fontId="3" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>'+
+    '</cellXfs></styleSheet>';
+
   function make(sheets){
     const F=[];
     let ct='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>';
@@ -327,15 +358,31 @@ const XLSX_GEN=(function(){
     sheets.forEach((s,i)=>{wb+=`<sheet name="${X(s.name.substring(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`});
     wb+='</sheets></workbook>';
     F.push(['xl/workbook.xml',enc(wb)]);
-    F.push(['xl/styles.xml',enc('<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>')]);
+    F.push(['xl/styles.xml',enc(stylesXml)]);
+
     sheets.forEach((s,si)=>{
-      let ws='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+      // Column widths
+      let ws='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+      if(s.cols){
+        ws+='<cols>';
+        s.cols.forEach((w,i)=>{ws+=`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`});
+        ws+='</cols>';
+      }
+      ws+='<sheetData>';
       s.rows.forEach((row,ri)=>{
-        ws+=`<row r="${ri+1}">`;
+        const rowStyle=row._style;// 'title','header','data','total'
+        ws+=`<row r="${ri+1}"${rowStyle==='title'?' ht="22"':''}>`;
         row.forEach((cell,ci)=>{
-          const cr=colL(ci)+(ri+1);const v=cell!=null?cell:'';const st=ri<=1?' s="1"':'';
-          if(typeof v==='number'&&!isNaN(v))ws+=`<c r="${cr}"${st}><v>${v}</v></c>`;
-          else ws+=`<c r="${cr}" t="inlineStr"${st}><is><t>${X(String(v))}</t></is></c>`;
+          if(cell!=null&&cell._style!==undefined)return;// skip meta
+          const cr=colL(ci)+(ri+1);const v=cell!=null?cell:'';
+          let st=0;
+          if(rowStyle==='title')st=1;
+          else if(rowStyle==='header')st=2;
+          else if(rowStyle==='total')st=(typeof v==='number'?6:4);
+          else if(rowStyle==='data')st=(typeof v==='number'?5:3);
+          else st=0;
+          if(typeof v==='number'&&!isNaN(v))ws+=`<c r="${cr}" s="${st}"><v>${v}</v></c>`;
+          else ws+=`<c r="${cr}" t="inlineStr" s="${st}"><is><t>${X(String(v))}</t></is></c>`;
         });
         ws+='</row>';
       });
@@ -347,51 +394,57 @@ const XLSX_GEN=(function(){
   return{make};
 })();
 
+// Helper: create styled row
+function mkRow(cells,style){const r=[...cells];r._style=style;return r}
+
 // ══════════ EXPORT ══════════
 function dlBlob(blob,name){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
-const diffMin=s=>s!=null?Math.round(s/60*100)/100:0;
 
 function doExp(mode){
   const its=getActive().filter(i=>S.sel.has(i.id));
   if(!its.length){alert('ไม่มีรายการที่จะส่งออก');return}
 
-  // Group by admin
   const byAdmin={};
   its.forEach(x=>{if(!byAdmin[x.adm])byAdmin[x.adm]=[];byAdmin[x.adm].push(x)});
 
+  const detCols=[6,24,24,13,30,30,30,24,24,13,16,16];
+  const sumCols=[20,18,18,18];
+  const DM=s=>s!=null?Math.round(s/60*100)/100:0;
+
   if(mode==='all'){
-    // Single xlsx with all admins
     const sheets=[];
-    // Summary sheet
-    const sumRows=[['สรุปรายการถอนช้าเกิน '+S.thr+' นาที'+(S.label?' - '+S.label:'')],
-      ['แอดมิน','วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)']];
-    let total=0;
+    // Summary
+    const sR=[];
+    sR.push(mkRow(['สรุปรายการถอนช้าเกิน '+S.thr+' นาที'+(S.label?' - '+S.label:''),'','',''],'title'));
+    sR.push(mkRow(['แอดมิน','วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)'],'header'));
+    let tot=0;
     Object.keys(byAdmin).sort().forEach(adm=>{
       const items=byAdmin[adm];
-      const byDate={};items.forEach(x=>{const dk=fDK(x.nd);if(!byDate[dk])byDate[dk]=[];byDate[dk].push(x)});
-      Object.keys(byDate).sort().forEach(dk=>{
-        const g=byDate[dk];const ts=g.reduce((s,x)=>s+x.diff,0);
-        sumRows.push([adm,dk,g.length,diffMin(Math.max(...g.map(x=>x.diff))),diffMin(ts/g.length)]);
-        total+=g.length;
+      const bd={};items.forEach(x=>{const dk=fDK(x.nd);if(!bd[dk])bd[dk]=[];bd[dk].push(x)});
+      Object.keys(bd).sort().forEach(dk=>{
+        const g=bd[dk];const ts=g.reduce((s,x)=>s+x.diff,0);
+        sR.push(mkRow([adm,dk,g.length,DM(Math.max(...g.map(x=>x.diff))),DM(ts/g.length)],'data'));
+        tot+=g.length;
       });
     });
-    sumRows.push(['รวมทั้งหมด','',total,'','']);
-    sheets.push({name:'สรุป',rows:sumRows});
+    sR.push(mkRow(['รวมทั้งหมด','',tot,'',''],'total'));
+    sheets.push({name:'สรุป',rows:sR,cols:[20,16,18,18,18]});
 
-    // Detail sheet
-    const detRows=[['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต']];
-    its.forEach((x,i)=>{
-      detRows.push([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),diffMin(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-']);
+    // Detail
+    const dR=[];
+    dR.push(mkRow(['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต'],'header'));
+    its.forEach(x=>{
+      dR.push(mkRow([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),DM(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-'],'data'));
     });
-    sheets.push({name:'รายการทั้งหมด',rows:detRows});
+    sheets.push({name:'รายการทั้งหมด',rows:dR,cols:detCols});
 
     const xlsx=XLSX_GEN.make(sheets);
     dlBlob(new Blob([xlsx],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'slow_withdraw_all.xlsx');
 
   }else{
-    // ═══ Per-admin xlsx (matching template exactly) ═══
+    // ═══ Per-admin xlsx ═══
     let delay=100;
     Object.keys(byAdmin).sort().forEach(adminName=>{
       setTimeout(()=>{
@@ -408,31 +461,33 @@ function doExp(mode){
 
         const sheets=[];
 
-        // 1) Summary sheet "สรุป"
-        const sumRows=[
-          ['สรุปรายการถอนช้าเกิน '+S.thr+' นาที - '+adminName],
-          ['วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)']
-        ];
+        // 1) Summary sheet
+        const sR=[];
+        sR.push(mkRow(['สรุปรายการถอนช้าเกิน '+S.thr+' นาที - '+adminName,'','',''],'title'));
+        sR.push(mkRow(['วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)'],'header'));
         let totalCount=0;
         Object.keys(byDate).sort().forEach(dk=>{
           const g=byDate[dk];const ts=g.reduce((s,x)=>s+x.diff,0);
-          sumRows.push([dkDisp(dk),g.length,diffMin(Math.max(...g.map(x=>x.diff))),diffMin(ts/g.length)]);
+          sR.push(mkRow([dkDisp(dk),g.length,DM(Math.max(...g.map(x=>x.diff))),DM(ts/g.length)],'data'));
           totalCount+=g.length;
         });
-        sumRows.push(['รวมทั้งหมด',totalCount,'','']);
-        sheets.push({name:'สรุป',rows:sumRows});
+        sR.push(mkRow(['รวมทั้งหมด',totalCount,'',''],'total'));
+        sheets.push({name:'สรุป',rows:sR,cols:sumCols});
 
         // 2) Per-date sheets
         Object.keys(byDate).sort().forEach(dk=>{
           const g=byDate[dk];
-          const dateRows=[
-            ['รายการถอนช้าเกิน '+S.thr+' นาที',adminName,'วันที่ '+dkDisp(dk)+' ('+g.length+' รายการ)'],
-            ['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต']
-          ];
-          g.forEach(x=>{
-            dateRows.push([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),diffMin(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-']);
+          const dR=[];
+          dR.push(mkRow(['รายการถอนช้าเกิน '+S.thr+' นาที',adminName,'วันที่ '+dkDisp(dk)+' ('+g.length+' รายการ)','','','','','','','','',''],'title'));
+          dR.push(mkRow(['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต'],'header'));
+          g.forEach((x,xi)=>{
+            dR.push(mkRow([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),DM(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-'],'data'));
           });
-          sheets.push({name:dkSheet(dk),rows:dateRows});
+          const ts=g.reduce((s,x)=>s+x.diff,0);
+          const maxS=Math.max(...g.map(x=>x.diff));
+          dR.push(mkRow(['','','','','','','','','','','',''],'data')); // empty separator
+          dR.push(mkRow(['รวม '+g.length+' รายการ','','เฉลี่ย:',DM(ts/g.length),'ช้าสุด:','',DM(maxS)+'  นาที','','','','',''],'total'));
+          sheets.push({name:dkSheet(dk),rows:dR,cols:detCols});
         });
 
         const xlsx=XLSX_GEN.make(sheets);
