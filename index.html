@@ -278,15 +278,12 @@ function pRows(rows,fi){
     const adm=ci['อนุมัติโดย']!==undefined?cl(String(r[ci['อนุมัติโดย']]||'')):'';
     const admClean=adm.replace(/^[-–—]$/,'')||'ไม่ระบุ';
 
+    const g=k=>ci[k]!==undefined?cl(String(r[ci[k]]||'')):'';
     items.push({
       id:'f'+fi+'r'+i,num:+numRaw,nd,wd,diff,adm:admClean,
-      player:ci['ผู้เล่น']!==undefined?cl(String(r[ci['ผู้เล่น']]||'')):'',
-      dst:ci['บัญชีปลายทาง']!==undefined?cl(String(r[ci['บัญชีปลายทาง']]||'')):'',
-      amt:ci['จำนวน']!==undefined?cl(String(r[ci['จำนวน']]||'')):'',
-      ch:ci['ช่องทาง']!==undefined?cl(String(r[ci['ช่องทาง']]||'')):'',
-      note:ci['โน้ต']!==undefined?cl(String(r[ci['โน้ต']]||'')):'',
-      uNote:'',
-      src:S.files[fi]||''
+      player:g('ผู้เล่น'),srcAcct:g('บัญชีต้นทาง'),dst:g('บัญชีปลายทาง'),
+      amt:g('จำนวน'),ba:g('ก่อน-หลัง'),ch:g('ช่องทาง'),
+      note:g('โน้ต'),uNote:'',src:S.files[fi]||''
     });
   }
   if(skipCount)S.parseLog+=`⚠️ ข้าม ${skipCount} แถว (parse วันที่ไม่ได้) → `;
@@ -297,47 +294,170 @@ function applyThr(){
   S.slow=s;S.exc=new Set();S.sel=new Set(s.map(x=>x.id));
 }
 
+// ══════════ MINIMAL XLSX GENERATOR (embedded, no CDN) ══════════
+const XLSX_GEN=(function(){
+  const crcT=(function(){const t=new Int32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c}return t})();
+  function crc32(b){let c=-1;for(let i=0;i<b.length;i++)c=crcT[(c^b[i])&0xFF]^(c>>>8);return(c^-1)>>>0}
+  const enc=s=>new TextEncoder().encode(s);
+  const u4=v=>[v&0xff,(v>>8)&0xff,(v>>16)&0xff,(v>>24)&0xff];
+  const u2=v=>[v&0xff,(v>>8)&0xff];
+  function zip(files){
+    const E=[];let off=0;const P=[];
+    for(const[n,d]of files){const nb=enc(n),cr=crc32(d);
+      const lh=new Uint8Array([80,75,3,4,20,0,0,0,0,0,0,0,0,0,...u4(cr),...u4(d.length),...u4(d.length),...u2(nb.length),0,0]);
+      P.push(lh,nb,d);E.push({n:nb,c:cr,s:d.length,o:off});off+=lh.length+nb.length+d.length}
+    const cs=off;
+    for(const e of E){const cd=new Uint8Array([80,75,1,2,20,0,20,0,0,0,0,0,0,0,0,0,...u4(e.c),...u4(e.s),...u4(e.s),...u2(e.n.length),0,0,0,0,0,0,0,0,0,0,0,0,...u4(e.o)]);P.push(cd,e.n);off+=cd.length+e.n.length}
+    P.push(new Uint8Array([80,75,5,6,0,0,0,0,...u2(E.length),...u2(E.length),...u4(off-cs),...u4(cs),0,0]));
+    let t=0;for(const p of P)t+=p.length;const r=new Uint8Array(t);let pos=0;for(const p of P){r.set(p,pos);pos+=p.length}return r}
+  const X=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function colL(ci){let c='';if(ci<26)c=String.fromCharCode(65+ci);else c=String.fromCharCode(64+Math.floor(ci/26))+String.fromCharCode(65+ci%26);return c}
+  function make(sheets){
+    const F=[];
+    let ct='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>';
+    sheets.forEach((_,i)=>{ct+=`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`});
+    ct+='<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+    F.push(['[Content_Types].xml',enc(ct)]);
+    F.push(['_rels/.rels',enc('<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')]);
+    let wr='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+    sheets.forEach((_,i)=>{wr+=`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`});
+    wr+=`<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+    F.push(['xl/_rels/workbook.xml.rels',enc(wr)]);
+    let wb='<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+    sheets.forEach((s,i)=>{wb+=`<sheet name="${X(s.name.substring(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`});
+    wb+='</sheets></workbook>';
+    F.push(['xl/workbook.xml',enc(wb)]);
+    F.push(['xl/styles.xml',enc('<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>')]);
+    sheets.forEach((s,si)=>{
+      let ws='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+      s.rows.forEach((row,ri)=>{
+        ws+=`<row r="${ri+1}">`;
+        row.forEach((cell,ci)=>{
+          const cr=colL(ci)+(ri+1);const v=cell!=null?cell:'';const st=ri<=1?' s="1"':'';
+          if(typeof v==='number'&&!isNaN(v))ws+=`<c r="${cr}"${st}><v>${v}</v></c>`;
+          else ws+=`<c r="${cr}" t="inlineStr"${st}><is><t>${X(String(v))}</t></is></c>`;
+        });
+        ws+='</row>';
+      });
+      ws+='</sheetData></worksheet>';
+      F.push([`xl/worksheets/sheet${si+1}.xml`,enc(ws)]);
+    });
+    return zip(F);
+  }
+  return{make};
+})();
+
 // ══════════ EXPORT ══════════
-function dl(txt,name){
-  const b=new Blob([txt],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+function dlBlob(blob,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
-function csvS(items,title){
-  const h=['#','วันที่แจ้ง','เวลาแจ้ง','วันที่ถอน','เวลาถอน','ผู้เล่น','บัญชีปลายทาง','จำนวน','ช่องทาง','อนุมัติโดย','เวลาที่ใช้(วินาที)','เวลาที่ใช้','ระดับ','ไฟล์ต้นทาง','หมายเหตุ'];
-  const rs=items.map((x,i)=>[i+1,fDate(x.nd),fTime(x.nd),fDate(x.wd),fTime(x.wd),'"'+x.player.replace(/"/g,'""')+'"','"'+x.dst.replace(/"/g,'""')+'"','"'+x.amt.replace(/"/g,'""')+'"',x.ch,x.adm,x.diff,'"'+fDur(x.diff)+'"',sevLabel(x.diff),'"'+(x.src||'').replace(/"/g,'""')+'"','"'+(x.uNote||x.note||'').replace(/"/g,'""')+'"'].join(','));
-  const ts=items.reduce((s,x)=>s+x.diff,0);
-  const avg=items.length?(ts/items.length/60).toFixed(1):0;
-  const mx=items.length?(Math.max(...items.map(x=>x.diff))/60).toFixed(1):0;
-  return'\uFEFF'+(title?'"'+title+'"\n\n':'')+h.join(',')+'\n'+rs.join('\n')+'\n\n"รวม '+items.length+' รายการ","เวลาเฉลี่ย: '+avg+' นาที","เวลาสูงสุด: '+mx+' นาที"';
-}
+const diffMin=s=>s!=null?Math.round(s/60*100)/100:0;
+
 function doExp(mode){
   const its=getActive().filter(i=>S.sel.has(i.id));
   if(!its.length){alert('ไม่มีรายการที่จะส่งออก');return}
+
+  // Group by admin
+  const byAdmin={};
+  its.forEach(x=>{if(!byAdmin[x.adm])byAdmin[x.adm]=[];byAdmin[x.adm].push(x)});
+
   if(mode==='all'){
-    dl(csvS(its,'รายการถอนช้าเกิน '+S.thr+' นาที'+(S.label?' - '+S.label:'')),'slow_withdraw_all.csv');
-  }else{
-    const g={};
-    its.forEach(x=>{const k=x.adm+'|||'+fDK(x.nd);if(!g[k])g[k]=[];g[k].push(x)});
-    let sum='\uFEFF"สรุปรายการถอนช้าเกิน '+S.thr+' นาที'+(S.label?' - '+S.label:'')+'"\n\n"แอดมิน","วันที่","จำนวน","เฉลี่ย(นาที)","สูงสุด(นาที)"\n';
-    Object.keys(g).sort().forEach(k=>{
-      const[adm,dt]=k.split('|||');const gi=g[k];const ts=gi.reduce((s,x)=>s+x.diff,0);
-      sum+='"'+adm+'","'+dt+'",'+gi.length+','+(ts/gi.length/60).toFixed(1)+','+(Math.max(...gi.map(x=>x.diff))/60).toFixed(1)+'\n';
+    // Single xlsx with all admins
+    const sheets=[];
+    // Summary sheet
+    const sumRows=[['สรุปรายการถอนช้าเกิน '+S.thr+' นาที'+(S.label?' - '+S.label:'')],
+      ['แอดมิน','วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)']];
+    let total=0;
+    Object.keys(byAdmin).sort().forEach(adm=>{
+      const items=byAdmin[adm];
+      const byDate={};items.forEach(x=>{const dk=fDK(x.nd);if(!byDate[dk])byDate[dk]=[];byDate[dk].push(x)});
+      Object.keys(byDate).sort().forEach(dk=>{
+        const g=byDate[dk];const ts=g.reduce((s,x)=>s+x.diff,0);
+        sumRows.push([adm,dk,g.length,diffMin(Math.max(...g.map(x=>x.diff))),diffMin(ts/g.length)]);
+        total+=g.length;
+      });
     });
-    dl(sum,'summary_report.csv');
-    let delay=400;
-    Object.keys(g).sort().forEach(k=>{
-      const[adm,dt]=k.split('|||');
-      setTimeout(()=>dl(csvS(g[k],'รายการถอนช้า - '+adm+' - วันที่ '+dt.replace(/-/g,'/')),'slow_'+adm+'_'+dt+'.csv'),delay);
-      delay+=400;
+    sumRows.push(['รวมทั้งหมด','',total,'','']);
+    sheets.push({name:'สรุป',rows:sumRows});
+
+    // Detail sheet
+    const detRows=[['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต']];
+    its.forEach((x,i)=>{
+      detRows.push([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),diffMin(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-']);
+    });
+    sheets.push({name:'รายการทั้งหมด',rows:detRows});
+
+    const xlsx=XLSX_GEN.make(sheets);
+    dlBlob(new Blob([xlsx],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'slow_withdraw_all.xlsx');
+
+  }else{
+    // ═══ Per-admin xlsx (matching template exactly) ═══
+    let delay=100;
+    Object.keys(byAdmin).sort().forEach(adminName=>{
+      setTimeout(()=>{
+        const items=byAdmin[adminName];
+        const byDate={};
+        items.forEach(x=>{
+          const d=x.nd;
+          const dk=d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate());
+          if(!byDate[dk])byDate[dk]=[];
+          byDate[dk].push(x);
+        });
+        const dkDisp=dk=>{const p=dk.split('-');return p[2]+'/'+p[1]+'/'+p[0]};
+        const dkSheet=dk=>{const p=dk.split('-');return p[2]+'-'+p[1]+'-'+p[0]};
+
+        const sheets=[];
+
+        // 1) Summary sheet "สรุป"
+        const sumRows=[
+          ['สรุปรายการถอนช้าเกิน '+S.thr+' นาที - '+adminName],
+          ['วันที่','จำนวนรายการ','ช้าสุด (นาที)','เฉลี่ย (นาที)']
+        ];
+        let totalCount=0;
+        Object.keys(byDate).sort().forEach(dk=>{
+          const g=byDate[dk];const ts=g.reduce((s,x)=>s+x.diff,0);
+          sumRows.push([dkDisp(dk),g.length,diffMin(Math.max(...g.map(x=>x.diff))),diffMin(ts/g.length)]);
+          totalCount+=g.length;
+        });
+        sumRows.push(['รวมทั้งหมด',totalCount,'','']);
+        sheets.push({name:'สรุป',rows:sumRows});
+
+        // 2) Per-date sheets
+        Object.keys(byDate).sort().forEach(dk=>{
+          const g=byDate[dk];
+          const dateRows=[
+            ['รายการถอนช้าเกิน '+S.thr+' นาที',adminName,'วันที่ '+dkDisp(dk)+' ('+g.length+' รายการ)'],
+            ['#','เวลาแจ้ง','เวลาถอน','ช้า (นาที)','ผู้เล่น','บัญชีต้นทาง','บัญชีปลายทาง','จำนวน','ก่อน-หลัง','ช่องทาง','อนุมัติโดย','โน้ต']
+          ];
+          g.forEach(x=>{
+            dateRows.push([x.num,fDate(x.nd)+' '+fTime(x.nd),fDate(x.wd)+' '+fTime(x.wd),diffMin(x.diff),x.player,x.srcAcct,x.dst,x.amt,x.ba,x.ch,x.adm,x.uNote||x.note||'-']);
+          });
+          sheets.push({name:dkSheet(dk),rows:dateRows});
+        });
+
+        const xlsx=XLSX_GEN.make(sheets);
+        dlBlob(new Blob([xlsx],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'รายการถอนช้า_'+adminName+'.xlsx');
+      },delay);
+      delay+=500;
     });
   }
 }
 
 // ══════════ ACTIONS ══════════
 function tSel(id){S.sel.has(id)?S.sel.delete(id):S.sel.add(id);R()}
-function tExc(id){S.exc.has(id)?S.exc.delete(id):S.exc.add(id);R()}
+function tExc(id){S.exc.add(id);S.sel.delete(id);R()}
 function selA(){getFiltered().forEach(i=>S.sel.add(i.id));R()}
 function deA(){getFiltered().forEach(i=>S.sel.delete(i.id));R()}
+function excSelected(){
+  const fil=getFiltered();
+  fil.forEach(i=>{if(S.sel.has(i.id)){S.exc.add(i.id);S.sel.delete(i.id)}});
+  R();
+}
+function excAll(){
+  getFiltered().forEach(i=>{S.exc.add(i.id);S.sel.delete(i.id)});
+  R();
+}
+function restoreAll(){S.exc=new Set();applyThr();R()}
 function doSrt(c){if(S.sC===c)S.sD=S.sD==='asc'?'desc':'asc';else{S.sC=c;S.sD='desc'}R()}
 function oEdit(id){const it=S.slow.find(x=>x.id===id);S.eId=id;S.eV=it?.uNote||'';R()}
 function sNote(){const v=document.getElementById('eA')?.value||'';S.slow=S.slow.map(x=>x.id===S.eId?{...x,uNote:v}:x);S.eId=null;R()}
@@ -479,11 +599,14 @@ function R(){
       ${hasFilters?`<button class="clear-btn" onclick="clrF()">✕ ล้าง</button>`:''}
     </div>`;
 
-    // Select bar
-    h+=`<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-      <button class="b bg bs" onclick="${aS?'deA':'selA'}()">${aS?'☐ ยกเลิกทั้งหมด':'☑ เลือกทั้งหมด ('+fil.length+')'}</button>
+    // Select bar + bulk actions
+    h+=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;padding:8px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:9px">
+      <button class="b bg bs" onclick="${aS?'deA':'selA'}()">${aS?'☐ ยกเลิกทั้งหมด':'☑ เลือกทั้งหมด'}</button>
       <span style="font-size:12px;color:var(--tD)">เลือก <b style="color:var(--cy)">${sIF}</b> / ${fil.length}</span>
-      ${S.exc.size?`<span style="font-size:12px;color:var(--rd)">· ซ่อน ${S.exc.size}</span>`:''}
+      ${sIF>0?`<button class="b bs" style="background:var(--rdD);color:var(--rd);border:1px solid rgba(244,63,94,.3)" onclick="if(confirm('ลบ ${sIF} รายการที่เลือกออก?'))excSelected()">🗑 ลบที่เลือก (${sIF})</button>`:''}
+      ${fil.length>0?`<button class="b bs" style="background:rgba(100,20,20,.4);color:#f87171;border:1px solid rgba(244,63,94,.2)" onclick="if(confirm('ลบทั้งหมด ${fil.length} รายการที่แสดงออก?'))excAll()">🗑 ลบทั้งหมด</button>`:''}
+      ${S.exc.size>0?`<span style="font-size:12px;color:var(--am);margin-left:4px">⚠️ ซ่อนอยู่ ${S.exc.size} รายการ</span>
+      <button class="b bg bs" onclick="restoreAll()" style="color:var(--gn);border-color:rgba(52,211,153,.3)">↩ คืนค่าทั้งหมด</button>`:''}
       <button class="b bg bs" style="margin-left:auto" onclick="document.getElementById('fi2').click()">📂 เปลี่ยนไฟล์</button>
       <input type="file" id="fi2" accept=".csv" multiple style="display:none" onchange="if(this.files.length)loadFiles(this.files)">
     </div>`;
@@ -524,10 +647,6 @@ function R(){
     h+=`</tbody></table></div>
     <div class="tf"><span>แสดง ${fil.length} จาก ${act.length} รายการ</span><span>เลือกส่งออก: ${sIF}</span></div></div>`;
 
-    if(S.exc.size)h+=`<div style="margin-top:14px;padding:10px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:var(--tM)">🗑 ซ่อน ${S.exc.size} รายการ</span>
-      <button class="b bg bs" onclick="S.exc=new Set();R()">คืนค่าทั้งหมด</button></div>`;
-
     // Parse log toggle
     if(S.parseLog){
       h+=`<details style="margin-top:14px"><summary style="font-size:11px;color:var(--tK);cursor:pointer">🔧 ข้อมูลการ parse (debug)</summary>
@@ -567,9 +686,9 @@ function R(){
       <div style="font-size:12px;color:var(--tD);margin-bottom:16px">เฉพาะรายการที่ ☑ เลือก (${cnt} รายการ)</div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <button class="eb" onclick="doExp('all');S.modal=null;R()">
-          <h4 style="color:var(--t)">📄 CSV รวมทั้งหมด</h4><p>ไฟล์เดียวรวมทุกแอดมิน ทุกวัน</p></button>
+          <h4 style="color:var(--t)">📄 Excel รวมทั้งหมด</h4><p>ไฟล์ .xlsx เดียว (ชีทสรุป + ชีทรายการ) รวมทุกแอดมิน</p></button>
         <button class="eb" style="border-color:#1e3a5f" onclick="doExp('split');S.modal=null;R()">
-          <h4 style="color:#7dd3fc">📊 CSV แยกไฟล์ตามแอดมิน + วัน</h4><p>ไฟล์สรุป + แยกไฟล์ CSV แต่ละแอดมิน/วัน</p></button>
+          <h4 style="color:#7dd3fc">📊 Excel แยกไฟล์ตามแอดมิน</h4><p>แยก .xlsx คนละไฟล์ — แต่ละไฟล์มีชีทสรุป + ชีทแยกวัน (ตรงรูปแบบตัวอย่าง)</p></button>
       </div>
       <div class="ma"><button class="b bg" onclick="S.modal=null;R()">ปิด</button></div>
     </div></div>`;
