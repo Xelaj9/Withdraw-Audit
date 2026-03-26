@@ -160,18 +160,23 @@ const S={
 // ══════════ HELPERS ══════════
 function parseBE(r){
   if(!r)return null;
-  const s=r.replace(/[\r\n]+/g,' ').trim();
+  // Normalize: replace all newlines/tabs with single space
+  const s=r.replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim();
+  // Try pattern: DD/MM/YYYY HH:MM:SS
   const m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})/);
   if(!m)return null;
-  let y=+m[3];if(y>2500)y-=543;
-  return new Date(y,+m[2]-1,+m[1],+m[4],+m[5],+m[6]);
+  let y=+m[3];
+  if(y>2500)y-=543; // BE→CE
+  const d=new Date(y,+m[2]-1,+m[1],+m[4],+m[5],+m[6]);
+  if(isNaN(d.getTime()))return null;
+  return d;
 }
-const cl=t=>(t||'').replace(/[\r\n]+/g,' ').trim();
+const cl=t=>(t||'').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim();
 const P=n=>String(n).padStart(2,'0');
 const fDate=d=>d?`${P(d.getDate())}/${P(d.getMonth()+1)}/${d.getFullYear()+543}`:'—';
 const fTime=d=>d?`${P(d.getHours())}:${P(d.getMinutes())}:${P(d.getSeconds())}`:'—';
 const fDK=d=>d?`${P(d.getDate())}-${P(d.getMonth()+1)}-${d.getFullYear()+543}`:'?';
-const fDur=s=>s==null?'—':`${Math.floor(s/60)} นาที ${s%60} วิ`;
+const fDur=s=>s==null?'—':`${Math.floor(s/60)} นาที ${s%60} วินาที`;
 const sevC=s=>{const m=s/60;if(m>30)return'sC';if(m>15)return'sH';if(m>10)return'sM';return'sL'};
 const sevLabel=s=>{const m=s/60;if(m>30)return'วิกฤต';if(m>15)return'รุนแรง';if(m>10)return'ปานกลาง';return'เล็กน้อย'};
 const esc=s=>{if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')};
@@ -228,16 +233,18 @@ function loadFiles(fileList){
     rd.onload=e=>{
       const text=e.target.result;
       const rows=parseCSV(text);
-      S.parseLog+=`📄 ${f.name}: ${rows.length} แถว CSV → `;
+      S.parseLog+=`📄 ${f.name}: ${rows.length} แถว CSV\n`;
       const items=pRows(rows,fi);
-      S.parseLog+=`${items.length} รายการ\n`;
+      S.parseLog+=`  → แปลงได้ ${items.length} รายการ\n`;
       allItems=allItems.concat(items);
       done++;S.busyDone=done;R();
       if(done===arr.length){
         allItems.sort((a,b)=>(a.nd?.getTime()||0)-(b.nd?.getTime()||0));
         allItems.forEach((x,i)=>x.id='i'+i);
         S.raw=allItems;
-        S.parseLog+=`\n✅ รวมทั้งหมด: ${allItems.length} รายการ`;
+        const slowCount=allItems.filter(x=>x.diff>S.thr*60).length;
+        const admins=[...new Set(allItems.map(x=>x.adm))];
+        S.parseLog+=`\n✅ รวม: ${allItems.length} รายการ | ช้า >${S.thr}นาที: ${slowCount} รายการ | แอดมิน: ${admins.join(', ')}`;
         applyThr();S.busy=false;R();
       }
     };
@@ -245,29 +252,46 @@ function loadFiles(fileList){
   });
 }
 function pRows(rows,fi){
-  // Find header
+  // Find header row
   let hi=-1;
   for(let i=0;i<Math.min(rows.length,15);i++){
     if(rows[i]?.some(c=>String(c).includes('เวลาแจ้ง'))){hi=i;break}
   }
   if(hi<0){S.parseLog+='❌ ไม่พบหัวตาราง\n';return[]}
   const hdr=rows[hi].map(h=>cl(String(h)));
+  // Flexible column index finder
   const ci={};hdr.forEach((h,i)=>ci[h]=i);
+  // Aliases for common variations
+  function findCol(...names){for(const n of names){if(ci[n]!==undefined)return ci[n]}return undefined}
+  const C={
+    num:findCol('#'),
+    notify:findCol('เวลาแจ้ง'),
+    withdraw:findCol('เวลาถอน'),
+    player:findCol('ผู้เล่น'),
+    srcAcct:findCol('บัญชีต้นทาง','บัญชีโอน'),
+    dst:findCol('บัญชีปลายทาง','บัญชีรับ'),
+    amt:findCol('จำนวน','จำนวนเงิน'),
+    ba:findCol('ก่อน-หลัง','ยอดก่อน-หลัง'),
+    ch:findCol('ช่องทาง'),
+    adm:findCol('อนุมัติโดย','แอดมิน'),
+    note:findCol('โน้ต','หมายเหตุ')
+  };
 
-  // Validate required columns
-  const need=['#','เวลาแจ้ง','เวลาถอน'];
-  const missing=need.filter(n=>ci[n]===undefined);
-  if(missing.length){S.parseLog+=`❌ ขาดคอลัมน์: ${missing.join(', ')}\n`;return[]}
+  if(C.num===undefined||C.notify===undefined||C.withdraw===undefined){
+    S.parseLog+='❌ ขาดคอลัมน์หลัก (#, เวลาแจ้ง, เวลาถอน)\n';return[]
+  }
+
+  S.parseLog+=`  หัวตาราง: ${hdr.filter(h=>h).join(', ')}\n`;
 
   const items=[];
   let skipCount=0;
   for(let i=hi+1;i<rows.length;i++){
     const r=rows[i];if(!r||r.length<3)continue;
-    const numRaw=cl(String(r[ci['#']]||''));
-    if(!numRaw||isNaN(+numRaw))continue;
+    const numRaw=cl(String(r[C.num]||''));
+    if(!numRaw||isNaN(parseInt(numRaw)))continue;
 
-    const notifyRaw=cl(String(r[ci['เวลาแจ้ง']]||''));
-    const withdrawRaw=cl(String(r[ci['เวลาถอน']]||''));
+    const notifyRaw=cl(String(r[C.notify]||''));
+    const withdrawRaw=cl(String(r[C.withdraw]||''));
     const nd=parseBE(notifyRaw);
     const wd=parseBE(withdrawRaw);
     if(!nd||!wd){skipCount++;continue}
@@ -275,18 +299,28 @@ function pRows(rows,fi){
     let diff=Math.round((wd-nd)/1000);
     if(diff<0)diff+=86400;
 
-    const adm=ci['อนุมัติโดย']!==undefined?cl(String(r[ci['อนุมัติโดย']]||'')):'';
-    const admClean=adm.replace(/^[-–—]$/,'')||'ไม่ระบุ';
+    const g=k=>k!==undefined?cl(String(r[k]||'')):'';
 
-    const g=k=>ci[k]!==undefined?cl(String(r[ci[k]]||'')):'';
+    // Normalize admin name
+    let admRaw=g(C.adm);
+    admRaw=admRaw.replace(/^[-–—]$/,'')||'ไม่ระบุ';
+
+    // Normalize amount: "301.30 Limit Withdrawal 100.00" → "301.30อั้นถอน 100.00"
+    let amtRaw=g(C.amt);
+    amtRaw=amtRaw.replace(/Limit Withdrawal/gi,'อั้นถอน');
+
+    // Normalize channel: "manual Success" → "manual สำเร็จ"
+    let chRaw=g(C.ch);
+    chRaw=chRaw.replace(/Success/gi,'สำเร็จ').replace(/Failed/gi,'ล้มเหลว').replace(/Pending/gi,'รอดำเนินการ');
+
     items.push({
-      id:'f'+fi+'r'+i,num:+numRaw,nd,wd,diff,adm:admClean,
-      player:g('ผู้เล่น'),srcAcct:g('บัญชีต้นทาง'),dst:g('บัญชีปลายทาง'),
-      amt:g('จำนวน'),ba:g('ก่อน-หลัง'),ch:g('ช่องทาง'),
-      note:g('โน้ต'),uNote:'',src:S.files[fi]||''
+      id:'f'+fi+'r'+i,num:parseInt(numRaw),nd,wd,diff,adm:admRaw,
+      player:g(C.player),srcAcct:g(C.srcAcct),dst:g(C.dst),
+      amt:amtRaw,ba:g(C.ba),ch:chRaw,
+      note:g(C.note),uNote:'',src:S.files[fi]||''
     });
   }
-  if(skipCount)S.parseLog+=`⚠️ ข้าม ${skipCount} แถว (parse วันที่ไม่ได้) → `;
+  if(skipCount)S.parseLog+=`  ⚠️ ข้าม ${skipCount} แถว (parse วันที่ไม่ได้)\n`;
   return items;
 }
 function applyThr(){
@@ -602,7 +636,13 @@ function R(){
       </div>`;
     }
 
-    // Parse log (if issues)
+    // Parse result summary
+    if(S.parseLog&&!S.parseLog.includes('❌')){
+      h+=`<div class="info-bar" style="border-color:rgba(34,211,153,.3);background:rgba(34,211,153,.05);color:var(--gn);font-size:12px">
+        ✅ อ่านสำเร็จ: ${S.raw.length.toLocaleString()} รายการ → พบช้าเกิน ${S.thr} นาที: <b>${act.length}</b> รายการ
+        ${S.files.length>1?` (จาก ${S.files.length} ไฟล์)`:''}
+      </div>`;
+    }
     if(S.parseLog&&S.parseLog.includes('❌')){
       h+=`<div class="info-bar" style="border-color:var(--rdD);background:rgba(159,18,57,.1);color:var(--rd);font-family:var(--mono);font-size:11px;white-space:pre-wrap">${esc(S.parseLog)}</div>`;
     }
