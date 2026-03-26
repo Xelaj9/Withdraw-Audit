@@ -25,9 +25,8 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 ::-webkit-scrollbar-thumb{background:var(--bdL);border-radius:4px}
 @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .fu{animation:fu .35s ease-out both}
-.wrap{max-width:1480px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1520px;margin:0 auto;padding:0 20px}
 
-/* Header */
 .hdr{background:linear-gradient(180deg,var(--s1),var(--bg));border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
 .hdr-in{display:flex;align-items:center;justify-content:space-between;padding:12px 0;flex-wrap:wrap;gap:10px}
 .logo{display:flex;align-items:center;gap:11px}
@@ -35,9 +34,8 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .logo h1{font-size:15px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .logo span{font-size:10.5px;color:var(--tD);font-family:var(--mono)}
 .hdr-act{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.fbadge{font-size:11px;color:var(--tD);font-family:var(--mono);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--s2);padding:4px 10px;border-radius:6px;border:1px solid var(--bd)}
+.fbadge{font-size:11px;color:var(--tD);font-family:var(--mono);background:var(--s2);padding:4px 10px;border-radius:6px;border:1px solid var(--bd)}
 
-/* Buttons */
 .b{font-family:var(--sans);font-size:13px;border:none;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .bp{background:linear-gradient(135deg,var(--cyD),var(--cy));color:#000;box-shadow:0 2px 10px rgba(34,211,238,.2)}
 .bp:hover{filter:brightness(1.1);transform:translateY(-1px)}
@@ -45,18 +43,15 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .bg:hover{border-color:var(--bdH);color:var(--t);background:var(--s2)}
 .bs{font-size:12px;padding:5px 12px}
 
-/* Inputs */
 .inp{background:var(--s1);border:1px solid var(--bd);color:var(--t);padding:7px 11px;border-radius:7px;font-size:13px;outline:none;font-family:var(--sans);transition:border-color .15s}
 .inp:focus{border-color:var(--cy);box-shadow:0 0 0 2px rgba(34,211,238,.1)}
 .inp::placeholder{color:var(--tK)}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath fill='%236c6c82' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px;cursor:pointer}
 .chk{width:15px;height:15px;accent-color:var(--cy);cursor:pointer}
 
-/* Tags */
 .tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:600;line-height:1.6;border:1px solid transparent}
 .td{width:5px;height:5px;border-radius:50%;display:inline-block;flex-shrink:0}
 
-/* Cards */
 .card{background:var(--s1);border:1px solid var(--bd);border-radius:12px}
 .sc{padding:14px 16px;transition:transform .15s,box-shadow .15s}
 .sc:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
@@ -64,11 +59,9 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .sv{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1.2}
 .su{font-size:12px;color:var(--tD);font-weight:400}
 
-/* Dropzone */
-.dz{border:2px dashed var(--bd);border-radius:16px;padding:56px 24px;text-align:center;cursor:pointer;transition:all .25s;max-width:580px;margin:64px auto}
+.dz{border:2px dashed var(--bd);border-radius:16px;padding:56px 24px;text-align:center;cursor:pointer;transition:all .25s;max-width:620px;margin:64px auto}
 .dz:hover,.dz.on{border-color:var(--cy);background:rgba(34,211,238,.03)}
 
-/* Table */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead th{padding:9px 8px;text-align:left;color:var(--tD);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--s1)}
@@ -79,7 +72,6 @@ tbody td{padding:7px 8px;vertical-align:middle}
 .tf{padding:9px 14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:12px;color:var(--tD)}
 .ct{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Overlay / Modal */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center}
 .md{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:26px;max-width:520px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .md h3{font-size:15px;font-weight:600;margin-bottom:14px}
@@ -87,19 +79,16 @@ tbody td{padding:7px 8px;vertical-align:middle}
 .ml{font-size:12.5px;color:var(--tM);display:block;margin-bottom:5px}
 .ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
-/* Export btn */
 .eb{background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:16px 18px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:var(--sans)}
 .eb:hover{border-color:var(--cy);background:var(--s3)}
 .eb h4{font-size:13.5px;font-weight:600;margin-bottom:3px}
 .eb p{font-size:11.5px;color:var(--tD)}
 
-/* Admin grid */
 .ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
 .ac{background:var(--bg);border:1px solid var(--bd);border-radius:9px;padding:11px 14px;cursor:pointer;transition:all .15s}
 .ac:hover{border-color:var(--bdL)}
 .ac.on{border-color:var(--cy);background:rgba(34,211,238,.04)}
 
-/* Severity */
 .sL{background:#081a1e;border-color:#0e7490;color:#67e8f9}
 .sL .td{background:#22d3ee}
 .sM{background:#1a1806;border-color:#a16207;color:#fde68a}
@@ -109,71 +98,96 @@ tbody td{padding:7px 8px;vertical-align:middle}
 .sC{background:#2c080e;border-color:#9f1239;color:#fda4af}
 .sC .td{background:#fb7185}
 
-/* Responsive */
-@media(max-width:768px){.sg{grid-template-columns:repeat(2,1fr)!important}.ag{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+/* ── Filter Bar (like reference screenshot) ── */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px}
+.fbar .inp{padding:6px 10px;font-size:12px;background:var(--s2);border-color:var(--bd)}
+.fbar select.inp{padding-right:24px}
+.fbar .search-w{position:relative;flex:0 1 160px;min-width:120px}
+.fbar .search-w .s-ico{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--tK);font-size:11px;pointer-events:none}
+.fbar .search-w .inp{width:100%;padding-left:26px}
+.fbar .clear-btn{background:var(--s3);border:1px solid var(--bdL);color:var(--tM);padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:var(--sans);transition:.15s;font-weight:500}
+.fbar .clear-btn:hover{background:var(--bdL);color:var(--t)}
+
+.info-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;margin-bottom:10px;font-size:12px;color:var(--tD)}
+
+@media(max-width:768px){.sg{grid-template-columns:repeat(2,1fr)!important}.ag{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.fbar{gap:5px}.fbar .search-w{flex:1 1 100%}}
 @media(max-width:480px){.sg{grid-template-columns:1fr!important}.wrap{padding:0 12px}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// ═══════════════ CUSTOM CSV PARSER (no CDN) ═══════════════
+// ══════════ ROBUST CSV PARSER (handles multi-line quoted fields) ══════════
 function parseCSV(text){
   const rows=[];let row=[];let cell='';let inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];const n=text[i+1];
+  const len=text.length;
+  for(let i=0;i<len;i++){
+    const c=text.charCodeAt(i);
     if(inQ){
-      if(c==='"'&&n==='"'){cell+='"';i++}
-      else if(c==='"'){inQ=false}
-      else{cell+=c}
+      if(c===34){ // "
+        if(i+1<len&&text.charCodeAt(i+1)===34){cell+='"';i++} // escaped ""
+        else{inQ=false}
+      }else{
+        cell+=text[i];
+      }
     }else{
-      if(c==='"'){inQ=true}
-      else if(c===','){row.push(cell);cell=''}
-      else if(c==='\r'&&n==='\n'){row.push(cell);cell='';rows.push(row);row=[];i++}
-      else if(c==='\n'){row.push(cell);cell='';rows.push(row);row=[]}
-      else{cell+=c}
+      if(c===34){inQ=true} // start quote
+      else if(c===44){row.push(cell);cell=''} // comma
+      else if(c===13){// \r
+        if(i+1<len&&text.charCodeAt(i+1)===10)i++; // skip \n after \r
+        row.push(cell);cell='';rows.push(row);row=[];
+      }
+      else if(c===10){row.push(cell);cell='';rows.push(row);row=[]} // \n
+      else{cell+=text[i]}
     }
   }
-  if(cell||row.length){row.push(cell);rows.push(row)}
+  if(cell!==''||row.length>0){row.push(cell);rows.push(row)}
   return rows;
 }
 
-// ═══════════════ STATE ═══════════════
+// ══════════ STATE ══════════
 const S={
   raw:[],slow:[],sel:new Set(),exc:new Set(),
-  fA:'*',fD:'*',q:'',
+  fA:'*',fD:'*',fSev:'*',fSrc:'*',q:'',
   eId:null,eV:'',
   modal:null,
   files:[],label:'',thr:5,
   sC:'diff',sD:'desc',
-  busy:false,busyDone:0,busyTotal:0
+  busy:false,busyDone:0,busyTotal:0,
+  parseLog:''
 };
 
-// ═══════════════ HELPERS ═══════════════
+// ══════════ HELPERS ══════════
 function parseBE(r){
   if(!r)return null;
-  const s=r.replace(/\r?\n/g,' ').trim();
-  const m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(\d{1,2}):(\d{2}):(\d{2})/);
+  const s=r.replace(/[\r\n]+/g,' ').trim();
+  const m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})/);
   if(!m)return null;
   let y=+m[3];if(y>2500)y-=543;
   return new Date(y,+m[2]-1,+m[1],+m[4],+m[5],+m[6]);
 }
-const cl=t=>(t||'').replace(/\r?\n/g,' ').trim();
+const cl=t=>(t||'').replace(/[\r\n]+/g,' ').trim();
 const P=n=>String(n).padStart(2,'0');
 const fDate=d=>d?`${P(d.getDate())}/${P(d.getMonth()+1)}/${d.getFullYear()+543}`:'—';
 const fTime=d=>d?`${P(d.getHours())}:${P(d.getMinutes())}:${P(d.getSeconds())}`:'—';
 const fDK=d=>d?`${P(d.getDate())}-${P(d.getMonth()+1)}-${d.getFullYear()+543}`:'?';
 const fDur=s=>s==null?'—':`${Math.floor(s/60)} นาที ${s%60} วิ`;
 const sevC=s=>{const m=s/60;if(m>30)return'sC';if(m>15)return'sH';if(m>10)return'sM';return'sL'};
-const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sevLabel=s=>{const m=s/60;if(m>30)return'วิกฤต';if(m>15)return'รุนแรง';if(m>10)return'ปานกลาง';return'เล็กน้อย'};
+const esc=s=>{if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')};
 
-// ═══════════════ DATA ═══════════════
+// ══════════ DATA ══════════
 function getActive(){return S.slow.filter(i=>!S.exc.has(i.id))}
 function getFiltered(){
   let a=getActive();
   if(S.fA!=='*')a=a.filter(i=>i.adm===S.fA);
   if(S.fD!=='*')a=a.filter(i=>fDK(i.nd)===S.fD);
-  if(S.q){const ql=S.q.toLowerCase();a=a.filter(i=>i.player.toLowerCase().includes(ql)||i.dst.toLowerCase().includes(ql)||i.amt.includes(ql)||i.adm.toLowerCase().includes(ql))}
+  if(S.fSev!=='*'){
+    const minSec=+S.fSev;
+    a=a.filter(i=>i.diff>=minSec);
+  }
+  if(S.fSrc!=='*')a=a.filter(i=>i.src===S.fSrc);
+  if(S.q){const ql=S.q.toLowerCase();a=a.filter(i=>i.player.toLowerCase().includes(ql)||i.dst.toLowerCase().includes(ql)||i.amt.includes(ql)||i.adm.toLowerCase().includes(ql)||i.src.toLowerCase().includes(ql))}
   a.sort((x,y)=>{
     let va,vb;
     if(S.sC==='diff'){va=x.diff;vb=y.diff}
@@ -197,106 +211,100 @@ function getStats(){
 }
 function getAdmins(){return[...new Set(S.slow.map(i=>i.adm))].sort()}
 function getDates(){return[...new Set(S.slow.map(i=>fDK(i.nd)))].sort()}
+function getSrcs(){return[...new Set(S.slow.map(i=>i.src))].filter(Boolean).sort()}
 
-// ═══════════════ FILE LOAD (MULTI) ═══════════════
+// ══════════ FILE LOAD (MULTI) ══════════
 function loadFiles(fileList){
   const arr=Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.csv'));
   if(!arr.length){alert('กรุณาเลือกไฟล์ CSV');return}
   S.busy=true;S.busyDone=0;S.busyTotal=arr.length;
   S.files=arr.map(f=>f.name);
-  S.raw=[];R();
+  S.parseLog='';
+  R();
   let allItems=[];
   let done=0;
   arr.forEach((f,fi)=>{
     const rd=new FileReader();
     rd.onload=e=>{
-      const rows=parseCSV(e.target.result);
+      const text=e.target.result;
+      const rows=parseCSV(text);
+      S.parseLog+=`📄 ${f.name}: ${rows.length} แถว CSV → `;
       const items=pRows(rows,fi);
+      S.parseLog+=`${items.length} รายการ\n`;
       allItems=allItems.concat(items);
       done++;S.busyDone=done;R();
       if(done===arr.length){
-        // sort by notify date
         allItems.sort((a,b)=>(a.nd?.getTime()||0)-(b.nd?.getTime()||0));
-        // re-assign unique ids
         allItems.forEach((x,i)=>x.id='i'+i);
-        S.raw=allItems;applyThr();S.busy=false;R();
+        S.raw=allItems;
+        S.parseLog+=`\n✅ รวมทั้งหมด: ${allItems.length} รายการ`;
+        applyThr();S.busy=false;R();
       }
     };
     rd.readAsText(f,'UTF-8');
   });
 }
-function pRows(rows,fileIdx){
+function pRows(rows,fi){
+  // Find header
   let hi=-1;
-  for(let i=0;i<Math.min(rows.length,10);i++){
+  for(let i=0;i<Math.min(rows.length,15);i++){
     if(rows[i]?.some(c=>String(c).includes('เวลาแจ้ง'))){hi=i;break}
   }
-  if(hi<0)return[];
+  if(hi<0){S.parseLog+='❌ ไม่พบหัวตาราง\n';return[]}
   const hdr=rows[hi].map(h=>cl(String(h)));
   const ci={};hdr.forEach((h,i)=>ci[h]=i);
+
+  // Validate required columns
+  const need=['#','เวลาแจ้ง','เวลาถอน'];
+  const missing=need.filter(n=>ci[n]===undefined);
+  if(missing.length){S.parseLog+=`❌ ขาดคอลัมน์: ${missing.join(', ')}\n`;return[]}
+
   const items=[];
+  let skipCount=0;
   for(let i=hi+1;i<rows.length;i++){
     const r=rows[i];if(!r||r.length<3)continue;
-    const n=cl(String(r[ci['#']]||''));
-    if(!n||isNaN(+n))continue;
-    const nd=parseBE(cl(String(r[ci['เวลาแจ้ง']]||'')));
-    const wd=parseBE(cl(String(r[ci['เวลาถอน']]||'')));
-    if(!nd||!wd)continue;
+    const numRaw=cl(String(r[ci['#']]||''));
+    if(!numRaw||isNaN(+numRaw))continue;
+
+    const notifyRaw=cl(String(r[ci['เวลาแจ้ง']]||''));
+    const withdrawRaw=cl(String(r[ci['เวลาถอน']]||''));
+    const nd=parseBE(notifyRaw);
+    const wd=parseBE(withdrawRaw);
+    if(!nd||!wd){skipCount++;continue}
+
     let diff=Math.round((wd-nd)/1000);
     if(diff<0)diff+=86400;
-    const adm=cl(String(r[ci['อนุมัติโดย']]||'')).replace(/^[-–—]$/,'')||'ไม่ระบุ';
+
+    const adm=ci['อนุมัติโดย']!==undefined?cl(String(r[ci['อนุมัติโดย']]||'')):'';
+    const admClean=adm.replace(/^[-–—]$/,'')||'ไม่ระบุ';
+
     items.push({
-      id:'f'+fileIdx+'r'+i,num:+n,nd,wd,diff,adm,
-      player:cl(String(r[ci['ผู้เล่น']]||'')),
-      dst:cl(String(r[ci['บัญชีปลายทาง']]||'')),
-      amt:cl(String(r[ci['จำนวน']]||'')),
-      ch:cl(String(r[ci['ช่องทาง']]||'')),
-      note:cl(String(r[ci['โน้ต']]||'')),
+      id:'f'+fi+'r'+i,num:+numRaw,nd,wd,diff,adm:admClean,
+      player:ci['ผู้เล่น']!==undefined?cl(String(r[ci['ผู้เล่น']]||'')):'',
+      dst:ci['บัญชีปลายทาง']!==undefined?cl(String(r[ci['บัญชีปลายทาง']]||'')):'',
+      amt:ci['จำนวน']!==undefined?cl(String(r[ci['จำนวน']]||'')):'',
+      ch:ci['ช่องทาง']!==undefined?cl(String(r[ci['ช่องทาง']]||'')):'',
+      note:ci['โน้ต']!==undefined?cl(String(r[ci['โน้ต']]||'')):'',
       uNote:'',
-      src:S.files[fileIdx]||''
+      src:S.files[fi]||''
     });
   }
+  if(skipCount)S.parseLog+=`⚠️ ข้าม ${skipCount} แถว (parse วันที่ไม่ได้) → `;
   return items;
 }
 function applyThr(){
   const s=S.raw.filter(x=>x.diff>S.thr*60);
   S.slow=s;S.exc=new Set();S.sel=new Set(s.map(x=>x.id));
 }
-// append new files without clearing existing
-function addFiles(fileList){
-  const arr=Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.csv'));
-  if(!arr.length){alert('กรุณาเลือกไฟล์ CSV');return}
-  S.busy=true;S.busyDone=0;S.busyTotal=arr.length;
-  const baseIdx=S.files.length;
-  arr.forEach(f=>S.files.push(f.name));
-  R();
-  let newItems=[];
-  let done=0;
-  arr.forEach((f,fi)=>{
-    const rd=new FileReader();
-    rd.onload=e=>{
-      const rows=parseCSV(e.target.result);
-      const items=pRows(rows,baseIdx+fi);
-      newItems=newItems.concat(items);
-      done++;S.busyDone=done;R();
-      if(done===arr.length){
-        const all=S.raw.concat(newItems);
-        all.sort((a,b)=>(a.nd?.getTime()||0)-(b.nd?.getTime()||0));
-        all.forEach((x,i)=>x.id='i'+i);
-        S.raw=all;applyThr();S.busy=false;R();
-      }
-    };
-    rd.readAsText(f,'UTF-8');
-  });
-}
 
-// ═══════════════ EXPORT ═══════════════
+// ══════════ EXPORT ══════════
 function dl(txt,name){
   const b=new Blob([txt],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 function csvS(items,title){
-  const h=['#','วันที่แจ้ง','เวลาแจ้ง','วันที่ถอน','เวลาถอน','ผู้เล่น','บัญชีปลายทาง','จำนวน','ช่องทาง','อนุมัติโดย','เวลาที่ใช้(วินาที)','เวลาที่ใช้','ไฟล์ต้นทาง','หมายเหตุ'];
-  const rs=items.map((x,i)=>[i+1,fDate(x.nd),fTime(x.nd),fDate(x.wd),fTime(x.wd),'"'+x.player.replace(/"/g,'""')+'"','"'+x.dst.replace(/"/g,'""')+'"','"'+x.amt.replace(/"/g,'""')+'"',x.ch,x.adm,x.diff,'"'+fDur(x.diff)+'"','"'+(x.src||'').replace(/"/g,'""')+'"','"'+(x.uNote||x.note||'').replace(/"/g,'""')+'"'].join(','));
+  const h=['#','วันที่แจ้ง','เวลาแจ้ง','วันที่ถอน','เวลาถอน','ผู้เล่น','บัญชีปลายทาง','จำนวน','ช่องทาง','อนุมัติโดย','เวลาที่ใช้(วินาที)','เวลาที่ใช้','ระดับ','ไฟล์ต้นทาง','หมายเหตุ'];
+  const rs=items.map((x,i)=>[i+1,fDate(x.nd),fTime(x.nd),fDate(x.wd),fTime(x.wd),'"'+x.player.replace(/"/g,'""')+'"','"'+x.dst.replace(/"/g,'""')+'"','"'+x.amt.replace(/"/g,'""')+'"',x.ch,x.adm,x.diff,'"'+fDur(x.diff)+'"',sevLabel(x.diff),'"'+(x.src||'').replace(/"/g,'""')+'"','"'+(x.uNote||x.note||'').replace(/"/g,'""')+'"'].join(','));
   const ts=items.reduce((s,x)=>s+x.diff,0);
   const avg=items.length?(ts/items.length/60).toFixed(1):0;
   const mx=items.length?(Math.max(...items.map(x=>x.diff))/60).toFixed(1):0;
@@ -325,7 +333,7 @@ function doExp(mode){
   }
 }
 
-// ═══════════════ ACTIONS ═══════════════
+// ══════════ ACTIONS ══════════
 function tSel(id){S.sel.has(id)?S.sel.delete(id):S.sel.add(id);R()}
 function tExc(id){S.exc.has(id)?S.exc.delete(id):S.exc.add(id);R()}
 function selA(){getFiltered().forEach(i=>S.sel.add(i.id));R()}
@@ -333,70 +341,107 @@ function deA(){getFiltered().forEach(i=>S.sel.delete(i.id));R()}
 function doSrt(c){if(S.sC===c)S.sD=S.sD==='asc'?'desc':'asc';else{S.sC=c;S.sD='desc'}R()}
 function oEdit(id){const it=S.slow.find(x=>x.id===id);S.eId=id;S.eV=it?.uNote||'';R()}
 function sNote(){const v=document.getElementById('eA')?.value||'';S.slow=S.slow.map(x=>x.id===S.eId?{...x,uNote:v}:x);S.eId=null;R()}
-function clrF(){S.fA='*';S.fD='*';S.q='';R()}
+function clrF(){S.fA='*';S.fD='*';S.fSev='*';S.fSrc='*';S.q='';R()}
 
-// ═══════════════ RENDER ═══════════════
+// ══════════ SEARCH WITH FOCUS FIX ══════════
+let _searchTimer=null;
+function onSearch(el){
+  S.q=el.value;
+  clearTimeout(_searchTimer);
+  _searchTimer=setTimeout(()=>{
+    const pos=el.selectionStart;
+    R();
+    // restore focus
+    requestAnimationFrame(()=>{
+      const inp=document.getElementById('qInp');
+      if(inp){inp.focus();inp.setSelectionRange(pos,pos)}
+    });
+  },200);
+}
+function onFilterChange(key,val){
+  S[key]=val;R();
+}
+
+// ══════════ RENDER ══════════
 function R(){
-  const act=getActive(),fil=getFiltered(),st=getStats(),adm=getAdmins(),dts=getDates();
+  const act=getActive(),fil=getFiltered(),st=getStats(),adm=getAdmins(),dts=getDates(),srcs=getSrcs();
   const sIF=fil.filter(i=>S.sel.has(i.id)).length;
   const aS=fil.length>0&&sIF===fil.length;
-  const tD=act.reduce((s,i)=>s+i.diff,0);
-  const avgM=act.length?(tD/act.length/60).toFixed(1):'0';
+  const tDiff=act.reduce((s,i)=>s+i.diff,0);
+  const avgM=act.length?(tDiff/act.length/60).toFixed(1):'0';
   const maxM=act.length?(Math.max(...act.map(i=>i.diff))/60).toFixed(1):'0';
+  const hasFilters=S.fA!=='*'||S.fD!=='*'||S.fSev!=='*'||S.fSrc!=='*'||S.q;
 
   let h=`
   <div class="hdr"><div class="wrap"><div class="hdr-in">
     <div class="logo"><div class="logo-ic">W</div><div><h1>Withdraw Audit</h1><span>ตรวจรายการถอนช้า &gt; ${S.thr} นาที</span></div></div>
     <div class="hdr-act">
-      ${S.files.length?`<span class="fbadge">📄 ${S.files.length} ไฟล์</span>`:''}
+      ${S.files.length?`<span class="fbadge">📄 ${S.files.length>1?S.files.length+' ไฟล์':esc(S.files[0])}</span>`:''}
       <button class="b bg bs" onclick="S.modal='set';R()">⚙️ ตั้งค่า</button>
       ${act.length?`<button class="b bp" onclick="S.modal='exp';R()">📊 ส่งออก</button>`:''}
     </div>
   </div></div></div>
   <div class="wrap" style="padding-top:20px;padding-bottom:40px">`;
 
-  if(!S.raw.length){
+  // ── UPLOAD ──
+  if(!S.raw.length&&!S.busy){
     h+=`
     <div class="dz fu" id="dz" onclick="document.getElementById('fi').click()">
-      <div style="font-size:44px;margin-bottom:14px">${S.busy?'⏳':'📂'}</div>
-      <div style="font-size:17px;font-weight:600;margin-bottom:6px">${S.busy?'กำลังประมวลผล... ('+S.busyDone+'/'+S.busyTotal+')':'นำเข้าไฟล์รายการถอน'}</div>
-      <div style="font-size:12.5px;color:var(--tD);margin-bottom:18px">วางไฟล์ CSV ที่นี่ หรือคลิกเพื่อเลือก — <b style="color:var(--cy)">เลือกได้หลายไฟล์พร้อมกัน</b></div>
+      <div style="font-size:44px;margin-bottom:14px">📂</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:6px">นำเข้าไฟล์รายการถอน</div>
+      <div style="font-size:12.5px;color:var(--tD);margin-bottom:6px">วางไฟล์ CSV ที่นี่ หรือคลิกเพื่อเลือก</div>
+      <div style="font-size:12.5px;color:var(--cy);margin-bottom:18px;font-weight:600">รองรับหลายไฟล์พร้อมกัน</div>
       <span class="tag" style="background:#161630;color:var(--vi)">CSV × หลายไฟล์</span>
     </div>
     <input type="file" id="fi" accept=".csv" multiple style="display:none" onchange="if(this.files.length)loadFiles(this.files)">
     <div style="text-align:center;margin-top:16px;font-size:11.5px;color:var(--tK)">คอลัมน์ที่ต้องมี: #, เวลาแจ้ง, เวลาถอน, ผู้เล่น, บัญชีปลายทาง, จำนวน, อนุมัติโดย</div>`;
   }
 
-  if(S.raw.length){
+  // ── LOADING ──
+  if(S.busy){
+    h+=`<div style="text-align:center;padding:80px 20px">
+      <div style="font-size:44px;margin-bottom:14px">⏳</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:6px">กำลังประมวลผล... (${S.busyDone}/${S.busyTotal})</div>
+      <div style="width:200px;height:4px;background:var(--bd);border-radius:2px;margin:16px auto;overflow:hidden">
+        <div style="width:${S.busyTotal?Math.round(S.busyDone/S.busyTotal*100):0}%;height:100%;background:var(--cy);border-radius:2px;transition:width .3s"></div>
+      </div>
+    </div>`;
+  }
+
+  // ── DASHBOARD ──
+  if(S.raw.length&&!S.busy){
     // Stats
-    h+=`<div class="sg fu" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:20px">
-      <div class="card sc"><div class="sl" style="color:var(--tD)">รายการทั้งหมด${S.files.length>1?' ('+S.files.length+' ไฟล์)':''}</div><div class="sv">${S.raw.length.toLocaleString()}</div></div>
+    h+=`<div class="sg fu" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:16px">
+      <div class="card sc"><div class="sl" style="color:var(--tD)">รายการทั้งหมด</div><div class="sv">${S.raw.length.toLocaleString()}</div></div>
       <div class="card sc" style="background:linear-gradient(135deg,#1c080e,var(--s1));border-color:var(--rdD);box-shadow:0 0 20px rgba(244,63,94,.08)"><div class="sl" style="color:var(--rd)">ถอนช้า (&gt;${S.thr} นาที)</div><div class="sv" style="color:var(--rdB)">${act.length}</div></div>
       <div class="card sc"><div class="sl" style="color:var(--tD)">เวลาเฉลี่ย</div><div class="sv" style="color:var(--yl)">${avgM}<span class="su"> นาที</span></div></div>
       <div class="card sc"><div class="sl" style="color:var(--tD)">สูงสุด</div><div class="sv" style="color:var(--rdB)">${maxM}<span class="su"> นาที</span></div></div>
       <div class="card sc"><div class="sl" style="color:var(--tD)">แอดมิน</div><div class="sv" style="color:var(--cy)">${adm.length}</div></div>
     </div>`;
 
-    // Loaded files
-    if(S.files.length>=1){
-      h+=`<div class="card fu" style="padding:12px 16px;margin-bottom:12px;animation-delay:.03s">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:12px;font-weight:600;color:var(--tM)">📄 ไฟล์ที่โหลด (${S.files.length}):</span>
-          ${S.files.map(f=>`<span class="tag" style="background:var(--s3);color:var(--tM);border:1px solid var(--bd)">${esc(f)}</span>`).join('')}
-          <button class="b bg bs" style="margin-left:auto" onclick="S.raw=[];S.slow=[];S.files=[];S.sel=new Set();S.exc=new Set();R()">🗑 ล้างทั้งหมด</button>
-        </div>
+    // Files loaded
+    if(S.files.length>1){
+      h+=`<div class="info-bar fu" style="animation-delay:.03s">
+        <span style="font-weight:600;color:var(--tM)">📄 ไฟล์ที่โหลด:</span>
+        ${S.files.map(f=>`<span class="tag" style="background:var(--s3);color:var(--tM);border:1px solid var(--bd)">${esc(f)}</span>`).join('')}
       </div>`;
+    }
+
+    // Parse log (if issues)
+    if(S.parseLog&&S.parseLog.includes('❌')){
+      h+=`<div class="info-bar" style="border-color:var(--rdD);background:rgba(159,18,57,.1);color:var(--rd);font-family:var(--mono);font-size:11px;white-space:pre-wrap">${esc(S.parseLog)}</div>`;
     }
 
     // Admin cards
     if(Object.keys(st.bA).length){
-      h+=`<div class="card fu" style="padding:16px;margin-bottom:20px;animation-delay:.05s">
+      h+=`<div class="card fu" style="padding:16px;margin-bottom:16px;animation-delay:.05s">
         <div style="font-size:13px;font-weight:600;color:var(--tM);margin-bottom:10px">📊 สรุปตามแอดมิน</div>
         <div class="ag">`;
       Object.entries(st.bA).sort((a,b)=>b[1].c-a[1].c).forEach(([a,s])=>{
-        h+=`<div class="ac ${S.fA===a?'on':''}" onclick="S.fA=S.fA==='${esc(a)}'?'*':'${esc(a)}';R()">
+        const aEsc=esc(a);
+        h+=`<div class="ac ${S.fA===a?'on':''}" onclick="onFilterChange('fA',S.fA==='${aEsc}'?'*':'${aEsc}')">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-            <span style="font-weight:600;font-size:13px;color:${S.fA===a?'var(--cy)':'var(--t)'}">${esc(a)}</span>
+            <span style="font-weight:600;font-size:13px;color:${S.fA===a?'var(--cy)':'var(--t)'}">${aEsc}</span>
             <span style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--rdB)">${s.c}</span>
           </div>
           <div style="font-size:10.5px;color:var(--tD)">เฉลี่ย ${(s.t/s.c/60).toFixed(1)} น. · สูงสุด ${(s.mx/60).toFixed(1)} น.</div>
@@ -405,25 +450,33 @@ function R(){
       h+=`</div></div>`;
     }
 
-    // Filters
-    h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px" class="fu" style="animation-delay:.1s">
-      <div style="position:relative;flex:1 1 180px">
-        <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--tK);font-size:12px;pointer-events:none">🔍</span>
-        <input class="inp" placeholder="ค้นหา..." value="${esc(S.q)}" oninput="S.q=this.value;R()" style="width:100%;padding-left:30px">
+    // ── FILTER BAR (like screenshot) ──
+    h+=`<div class="fbar fu" style="animation-delay:.08s">
+      <div class="search-w">
+        <span class="s-ico">🔍</span>
+        <input class="inp" id="qInp" placeholder="ค้นหา..." value="${esc(S.q)}" oninput="onSearch(this)">
       </div>
-      <select class="inp" onchange="S.fA=this.value;R()" style="min-width:135px">
-        <option value="*" ${S.fA==='*'?'selected':''}>ทุกแอดมิน (${adm.length})</option>
+      <select class="inp" onchange="onFilterChange('fA',this.value)" style="min-width:130px">
+        <option value="*" ${S.fA==='*'?'selected':''}>ทุกแอดมิน</option>
         ${adm.map(a=>`<option value="${esc(a)}" ${S.fA===a?'selected':''}>${esc(a)} (${st.bA[a]?.c||0})</option>`).join('')}
       </select>
-      <select class="inp" onchange="S.fD=this.value;R()" style="min-width:125px">
-        <option value="*" ${S.fD==='*'?'selected':''}>ทุกวัน (${dts.length})</option>
+      <select class="inp" onchange="onFilterChange('fSev',this.value)" style="min-width:120px">
+        <option value="*" ${S.fSev==='*'?'selected':''}>ทุกระดับ</option>
+        <option value="300" ${S.fSev==='300'?'selected':''}>⏱ &gt;5 นาที</option>
+        <option value="600" ${S.fSev==='600'?'selected':''}>⚠️ &gt;10 นาที</option>
+        <option value="900" ${S.fSev==='900'?'selected':''}>🔥 &gt;15 นาที</option>
+        <option value="1800" ${S.fSev==='1800'?'selected':''}>💀 &gt;30 นาที</option>
+      </select>
+      <select class="inp" onchange="onFilterChange('fD',this.value)" style="min-width:130px">
+        <option value="*" ${S.fD==='*'?'selected':''}>ทุกวัน</option>
         ${dts.map(d=>`<option value="${d}" ${S.fD===d?'selected':''}>${d} (${st.bD[d]?.c||0})</option>`).join('')}
       </select>
-      ${(S.fA!=='*'||S.fD!=='*'||S.q)?`<button class="b bg bs" onclick="clrF()">✕ ล้าง</button>`:''}
-      <button class="b bg bs" style="margin-left:auto" onclick="document.getElementById('fi3').click()">➕ เพิ่มไฟล์</button>
-      <input type="file" id="fi3" accept=".csv" multiple style="display:none" onchange="if(this.files.length)addFiles(this.files)">
-      <button class="b bg bs" onclick="document.getElementById('fi2').click()">📂 เปลี่ยนไฟล์</button>
-      <input type="file" id="fi2" accept=".csv" multiple style="display:none" onchange="if(this.files.length)loadFiles(this.files)">
+      ${srcs.length>1?`
+      <select class="inp" onchange="onFilterChange('fSrc',this.value)" style="min-width:100px">
+        <option value="*" ${S.fSrc==='*'?'selected':''}>ทุกไฟล์</option>
+        ${srcs.map(s=>`<option value="${esc(s)}" ${S.fSrc===s?'selected':''}>${esc(s)}</option>`).join('')}
+      </select>`:''}
+      ${hasFilters?`<button class="clear-btn" onclick="clrF()">✕ ล้าง</button>`:''}
     </div>`;
 
     // Select bar
@@ -431,10 +484,12 @@ function R(){
       <button class="b bg bs" onclick="${aS?'deA':'selA'}()">${aS?'☐ ยกเลิกทั้งหมด':'☑ เลือกทั้งหมด ('+fil.length+')'}</button>
       <span style="font-size:12px;color:var(--tD)">เลือก <b style="color:var(--cy)">${sIF}</b> / ${fil.length}</span>
       ${S.exc.size?`<span style="font-size:12px;color:var(--rd)">· ซ่อน ${S.exc.size}</span>`:''}
+      <button class="b bg bs" style="margin-left:auto" onclick="document.getElementById('fi2').click()">📂 เปลี่ยนไฟล์</button>
+      <input type="file" id="fi2" accept=".csv" multiple style="display:none" onchange="if(this.files.length)loadFiles(this.files)">
     </div>`;
 
     // Table
-    h+=`<div class="card fu" style="overflow:hidden;animation-delay:.15s"><div class="tw"><table>
+    h+=`<div class="card fu" style="overflow:hidden;animation-delay:.12s"><div class="tw"><table>
       <thead><tr>
         <th style="width:36px;text-align:center">☑</th>`;
     [{k:'num',l:'#',w:'44px'},{k:'nd',l:'เวลาแจ้ง',w:'130px'},{k:'wd',l:'เวลาถอน',w:'130px'},
@@ -444,7 +499,7 @@ function R(){
     ].forEach(c=>{h+=`<th style="min-width:${c.w}" onclick="doSrt('${c.k}')">${c.l} ${S.sC===c.k?(S.sD==='asc'?'↑':'↓'):''}</th>`});
     h+=`<th style="width:60px;text-align:center">จัดการ</th></tr></thead><tbody>`;
 
-    if(!fil.length) h+=`<tr><td colspan="11" style="padding:36px;text-align:center;color:var(--tK)">${S.raw.length?'ไม่พบรายการช้าเกินกำหนด':'ยังไม่มีข้อมูล'}</td></tr>`;
+    if(!fil.length)h+=`<tr><td colspan="11" style="padding:36px;text-align:center;color:var(--tK)">${S.raw.length?'ไม่พบรายการตามเงื่อนไขที่กรอง':'ยังไม่มีข้อมูล'}</td></tr>`;
 
     fil.forEach((it,idx)=>{
       const on=S.sel.has(it.id);const sc=sevC(it.diff);
@@ -467,16 +522,23 @@ function R(){
     });
 
     h+=`</tbody></table></div>
-    <div class="tf"><span>แสดง ${fil.length} รายการ</span><span>เลือกส่งออก: ${sIF}</span></div></div>`;
+    <div class="tf"><span>แสดง ${fil.length} จาก ${act.length} รายการ</span><span>เลือกส่งออก: ${sIF}</span></div></div>`;
 
-    if(S.exc.size) h+=`<div style="margin-top:14px;padding:10px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+    if(S.exc.size)h+=`<div style="margin-top:14px;padding:10px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:12px;color:var(--tM)">🗑 ซ่อน ${S.exc.size} รายการ</span>
       <button class="b bg bs" onclick="S.exc=new Set();R()">คืนค่าทั้งหมด</button></div>`;
+
+    // Parse log toggle
+    if(S.parseLog){
+      h+=`<details style="margin-top:14px"><summary style="font-size:11px;color:var(--tK);cursor:pointer">🔧 ข้อมูลการ parse (debug)</summary>
+        <div style="margin-top:8px;padding:10px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--tD);white-space:pre-wrap">${esc(S.parseLog)}</div>
+      </details>`;
+    }
   }
 
   h+=`</div>`;
 
-  // Modals
+  // ── MODALS ──
   if(S.eId){
     const it=S.slow.find(x=>x.id===S.eId);
     h+=`<div class="ov" onclick="S.eId=null;R()"><div class="md" onclick="event.stopPropagation()">
