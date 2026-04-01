@@ -108,6 +108,9 @@ tbody td{padding:7px 8px;vertical-align:middle}
 .fbar .search-w .inp{width:100%;padding-left:26px}
 .fbar .clear-btn{background:var(--s3);border:1px solid var(--bdL);color:var(--tM);padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:var(--sans);transition:.15s;font-weight:500}
 .fbar .clear-btn:hover{background:var(--bdL);color:var(--t)}
+input[type=time],input[type=number]{color-scheme:dark}
+input[type=time]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer}
+input[type=number]::-webkit-inner-spin-button{opacity:0.5}
 
 .info-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;margin-bottom:10px;font-size:12px;color:var(--tD)}
 
@@ -149,7 +152,7 @@ function parseCSV(text){
 // ══════════ STATE ══════════
 const S={
   raw:[],slow:[],sel:new Set(),exc:new Set(),
-  fA:'*',fD:'*',fSev:'*',fSrc:'*',q:'',
+  fA:'*',fD:'*',fSev:'*',fSrc:'*',fTFrom:'',fTTo:'',fDurMin:'',fDurMax:'',q:'',
   eId:null,eV:'',
   modal:null,
   files:[],label:'',thr:5,
@@ -193,12 +196,45 @@ function getFiltered(){
     a=a.filter(i=>i.diff>=minSec);
   }
   if(S.fSrc!=='*')a=a.filter(i=>i.src===S.fSrc);
+  // Time range filter: filter by hour:minute of notify time
+  if(S.fTFrom){
+    const[fh,fm]=S.fTFrom.split(':').map(Number);
+    const fromMin=fh*60+fm;
+    a=a.filter(i=>{
+      if(!i.nd)return false;
+      const m=i.nd.getHours()*60+i.nd.getMinutes();
+      return m>=fromMin;
+    });
+  }
+  if(S.fTTo){
+    const[th,tm]=S.fTTo.split(':').map(Number);
+    const toMin=th*60+tm;
+    a=a.filter(i=>{
+      if(!i.nd)return false;
+      const m=i.nd.getHours()*60+i.nd.getMinutes();
+      return m<=toMin;
+    });
+  }
+  // Duration range filter (minutes)
+  if(S.fDurMin){
+    const minSec=parseFloat(S.fDurMin)*60;
+    a=a.filter(i=>i.diff>=minSec);
+  }
+  if(S.fDurMax){
+    const maxSec=parseFloat(S.fDurMax)*60;
+    a=a.filter(i=>i.diff<=maxSec);
+  }
   if(S.q){const ql=S.q.toLowerCase();a=a.filter(i=>i.player.toLowerCase().includes(ql)||i.dst.toLowerCase().includes(ql)||i.amt.includes(ql)||i.adm.toLowerCase().includes(ql)||i.src.toLowerCase().includes(ql))}
   a.sort((x,y)=>{
     let va,vb;
     if(S.sC==='diff'){va=x.diff;vb=y.diff}
     else if(S.sC==='nd'||S.sC==='wd'){va=(x[S.sC]?.getTime()||0);vb=(y[S.sC]?.getTime()||0)}
     else if(S.sC==='num'){va=x.num;vb=y.num}
+    else if(S.sC==='amt'){
+      // Parse amount as number: "3,300.00" → 3300, "315.25อั้นถอน 100.00" → 315.25
+      const parseAmt=s=>{const m=(s||'').replace(/,/g,'').match(/[\d.]+/);return m?parseFloat(m[0]):0};
+      va=parseAmt(x.amt);vb=parseAmt(y.amt);
+    }
     else{va=x[S.sC]||'';vb=y[S.sC]||'';if(typeof va==='string')return S.sD==='asc'?va.localeCompare(vb):vb.localeCompare(va)}
     return S.sD==='asc'?va-vb:vb-va;
   });
@@ -551,7 +587,7 @@ function restoreAll(){S.exc=new Set();applyThr();R()}
 function doSrt(c){if(S.sC===c)S.sD=S.sD==='asc'?'desc':'asc';else{S.sC=c;S.sD='desc'}R()}
 function oEdit(id){const it=S.slow.find(x=>x.id===id);S.eId=id;S.eV=it?.uNote||'';R()}
 function sNote(){const v=document.getElementById('eA')?.value||'';S.slow=S.slow.map(x=>x.id===S.eId?{...x,uNote:v}:x);S.eId=null;R()}
-function clrF(){S.fA='*';S.fD='*';S.fSev='*';S.fSrc='*';S.q='';R()}
+function clrF(){S.fA='*';S.fD='*';S.fSev='*';S.fSrc='*';S.fTFrom='';S.fTTo='';S.fDurMin='';S.fDurMax='';S.q='';R()}
 
 // ══════════ SEARCH WITH FOCUS FIX ══════════
 let _searchTimer=null;
@@ -580,7 +616,7 @@ function R(){
   const tDiff=act.reduce((s,i)=>s+i.diff,0);
   const avgM=act.length?(tDiff/act.length/60).toFixed(1):'0';
   const maxM=act.length?(Math.max(...act.map(i=>i.diff))/60).toFixed(1):'0';
-  const hasFilters=S.fA!=='*'||S.fD!=='*'||S.fSev!=='*'||S.fSrc!=='*'||S.q;
+  const hasFilters=S.fA!=='*'||S.fD!=='*'||S.fSev!=='*'||S.fSrc!=='*'||S.fTFrom||S.fTTo||S.fDurMin||S.fDurMax||S.q;
 
   let h=`
   <div class="hdr"><div class="wrap"><div class="hdr-in">
@@ -667,32 +703,54 @@ function R(){
     }
 
     // ── FILTER BAR (like screenshot) ──
-    h+=`<div class="fbar fu" style="animation-delay:.08s">
-      <div class="search-w">
-        <span class="s-ico">🔍</span>
-        <input class="inp" id="qInp" placeholder="ค้นหา..." value="${esc(S.q)}" oninput="onSearch(this)">
+    h+=`<div class="fbar fu" style="animation-delay:.08s;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;width:100%">
+        <div class="search-w">
+          <span class="s-ico">🔍</span>
+          <input class="inp" id="qInp" placeholder="ค้นหา..." value="${esc(S.q)}" oninput="onSearch(this)">
+        </div>
+        <select class="inp" onchange="onFilterChange('fA',this.value)" style="min-width:130px">
+          <option value="*" ${S.fA==='*'?'selected':''}>ทุกแอดมิน</option>
+          ${adm.map(a=>`<option value="${esc(a)}" ${S.fA===a?'selected':''}>${esc(a)} (${st.bA[a]?.c||0})</option>`).join('')}
+        </select>
+        <select class="inp" onchange="onFilterChange('fSev',this.value)" style="min-width:120px">
+          <option value="*" ${S.fSev==='*'?'selected':''}>ทุกระดับ</option>
+          <option value="300" ${S.fSev==='300'?'selected':''}>⏱ &gt;5 นาที</option>
+          <option value="600" ${S.fSev==='600'?'selected':''}>⚠️ &gt;10 นาที</option>
+          <option value="900" ${S.fSev==='900'?'selected':''}>🔥 &gt;15 นาที</option>
+          <option value="1800" ${S.fSev==='1800'?'selected':''}>💀 &gt;30 นาที</option>
+        </select>
+        <select class="inp" onchange="onFilterChange('fD',this.value)" style="min-width:130px">
+          <option value="*" ${S.fD==='*'?'selected':''}>ทุกวัน</option>
+          ${dts.map(d=>`<option value="${d}" ${S.fD===d?'selected':''}>${d} (${st.bD[d]?.c||0})</option>`).join('')}
+        </select>
+        ${srcs.length>1?`
+        <select class="inp" onchange="onFilterChange('fSrc',this.value)" style="min-width:100px">
+          <option value="*" ${S.fSrc==='*'?'selected':''}>ทุกไฟล์</option>
+          ${srcs.map(s=>`<option value="${esc(s)}" ${S.fSrc===s?'selected':''}>${esc(s)}</option>`).join('')}
+        </select>`:''}
+        ${hasFilters?`<button class="clear-btn" onclick="clrF()">✕ ล้างตัวกรอง</button>`:''}
       </div>
-      <select class="inp" onchange="onFilterChange('fA',this.value)" style="min-width:130px">
-        <option value="*" ${S.fA==='*'?'selected':''}>ทุกแอดมิน</option>
-        ${adm.map(a=>`<option value="${esc(a)}" ${S.fA===a?'selected':''}>${esc(a)} (${st.bA[a]?.c||0})</option>`).join('')}
-      </select>
-      <select class="inp" onchange="onFilterChange('fSev',this.value)" style="min-width:120px">
-        <option value="*" ${S.fSev==='*'?'selected':''}>ทุกระดับ</option>
-        <option value="300" ${S.fSev==='300'?'selected':''}>⏱ &gt;5 นาที</option>
-        <option value="600" ${S.fSev==='600'?'selected':''}>⚠️ &gt;10 นาที</option>
-        <option value="900" ${S.fSev==='900'?'selected':''}>🔥 &gt;15 นาที</option>
-        <option value="1800" ${S.fSev==='1800'?'selected':''}>💀 &gt;30 นาที</option>
-      </select>
-      <select class="inp" onchange="onFilterChange('fD',this.value)" style="min-width:130px">
-        <option value="*" ${S.fD==='*'?'selected':''}>ทุกวัน</option>
-        ${dts.map(d=>`<option value="${d}" ${S.fD===d?'selected':''}>${d} (${st.bD[d]?.c||0})</option>`).join('')}
-      </select>
-      ${srcs.length>1?`
-      <select class="inp" onchange="onFilterChange('fSrc',this.value)" style="min-width:100px">
-        <option value="*" ${S.fSrc==='*'?'selected':''}>ทุกไฟล์</option>
-        ${srcs.map(s=>`<option value="${esc(s)}" ${S.fSrc===s?'selected':''}>${esc(s)}</option>`).join('')}
-      </select>`:''}
-      ${hasFilters?`<button class="clear-btn" onclick="clrF()">✕ ล้าง</button>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%">
+        <div style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 10px">
+          <span style="font-size:11px;color:var(--tM);white-space:nowrap">🕐 เวลาแจ้ง</span>
+          <input type="time" class="inp" value="${S.fTFrom}" onchange="onFilterChange('fTFrom',this.value)" style="width:100px;padding:4px 6px;font-family:var(--mono);font-size:12px">
+          <span style="font-size:12px;color:var(--tK)">ถึง</span>
+          <input type="time" class="inp" value="${S.fTTo}" onchange="onFilterChange('fTTo',this.value)" style="width:100px;padding:4px 6px;font-family:var(--mono);font-size:12px">
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 10px">
+          <span style="font-size:11px;color:var(--tM);white-space:nowrap">⏱ ช้า (นาที)</span>
+          <input type="number" class="inp" placeholder="ต่ำสุด" value="${S.fDurMin}" onchange="onFilterChange('fDurMin',this.value)" style="width:70px;padding:4px 6px;font-family:var(--mono);font-size:12px" min="0" step="1">
+          <span style="font-size:12px;color:var(--tK)">ถึง</span>
+          <input type="number" class="inp" placeholder="สูงสุด" value="${S.fDurMax}" onchange="onFilterChange('fDurMax',this.value)" style="width:70px;padding:4px 6px;font-family:var(--mono);font-size:12px" min="0" step="1">
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="b bg" style="padding:4px 10px;font-size:11px;${S.fDurMin==='5'&&S.fDurMax==='10'?'border-color:var(--cy);color:var(--cy)':''}" onclick="S.fDurMin='5';S.fDurMax='10';R()">5-10 น.</button>
+          <button class="b bg" style="padding:4px 10px;font-size:11px;${S.fDurMin==='10'&&S.fDurMax==='30'?'border-color:var(--cy);color:var(--cy)':''}" onclick="S.fDurMin='10';S.fDurMax='30';R()">10-30 น.</button>
+          <button class="b bg" style="padding:4px 10px;font-size:11px;${S.fDurMin==='30'&&!S.fDurMax?'border-color:var(--cy);color:var(--cy)':''}" onclick="S.fDurMin='30';S.fDurMax='';R()">30+ น.</button>
+          <button class="b bg" style="padding:4px 10px;font-size:11px;${S.fDurMin==='60'&&!S.fDurMax?'border-color:var(--cy);color:var(--cy)':''}" onclick="S.fDurMin='60';S.fDurMax='';R()">60+ น.</button>
+        </div>
+      </div>
     </div>`;
 
     // Select bar + bulk actions
@@ -707,6 +765,25 @@ function R(){
       <input type="file" id="fi2" accept=".csv" multiple style="display:none" onchange="if(this.files.length)loadFiles(this.files)">
     </div>`;
 
+    // Sort bar
+    const sortOpts=[
+      {k:'diff',l:'เวลาที่ใช้ (ช้าสุด)'},
+      {k:'nd',l:'เวลาแจ้ง'},
+      {k:'wd',l:'เวลาถอน'},
+      {k:'num',l:'ลำดับ #'},
+      {k:'adm',l:'อนุมัติโดย'},
+      {k:'amt',l:'จำนวน'},
+      {k:'player',l:'ผู้เล่น'},
+    ];
+    h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--tD);white-space:nowrap">🔃 เรียง:</span>
+      ${sortOpts.map(o=>{
+        const isActive=S.sC===o.k;
+        const arrow=isActive?(S.sD==='asc'?' ↑':' ↓'):'';
+        return`<button class="b bs" style="padding:4px 10px;font-size:11px;${isActive?'background:var(--cyD);color:#000;border:1px solid var(--cy)':'background:var(--s2);color:var(--tM);border:1px solid var(--bd)'}" onclick="doSrt('${o.k}')">${o.l}${arrow}</button>`;
+      }).join('')}
+    </div>`;
+
     // Table
     h+=`<div class="card fu" style="overflow:hidden;animation-delay:.12s"><div class="tw"><table>
       <thead><tr>
@@ -715,7 +792,12 @@ function R(){
      {k:'diff',l:'เวลาที่ใช้',w:'140px'},{k:'player',l:'ผู้เล่น',w:'140px'},
      {k:'dst',l:'ปลายทาง',w:'165px'},{k:'amt',l:'จำนวน',w:'110px'},
      {k:'adm',l:'อนุมัติโดย',w:'95px'},{k:'ch',l:'ช่องทาง',w:'70px'}
-    ].forEach(c=>{h+=`<th style="min-width:${c.w}" onclick="doSrt('${c.k}')">${c.l} ${S.sC===c.k?(S.sD==='asc'?'↑':'↓'):''}</th>`});
+    ].forEach(c=>{
+      const isActive=S.sC===c.k;
+      const arrow=isActive?(S.sD==='asc'?' ↑':' ↓'):'';
+      const style=isActive?'color:var(--cy);':'';
+      h+=`<th style="min-width:${c.w};${style}" onclick="doSrt('${c.k}')">${c.l}${arrow}</th>`;
+    });
     h+=`<th style="width:60px;text-align:center">จัดการ</th></tr></thead><tbody>`;
 
     if(!fil.length)h+=`<tr><td colspan="11" style="padding:36px;text-align:center;color:var(--tK)">${S.raw.length?'ไม่พบรายการตามเงื่อนไขที่กรอง':'ยังไม่มีข้อมูล'}</td></tr>`;
